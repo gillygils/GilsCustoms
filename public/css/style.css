@@ -37,7 +37,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
@@ -266,7 +266,7 @@ section {
   border-block: 1px solid rgba(255, 255, 255, 0.04);
 }
 .section-head {
-  max-width: 720px;
+  max-width: 45rem;
   margin-bottom: 3rem;
 }
 .section-head.center {
@@ -306,7 +306,7 @@ section {
     linear-gradient(0deg, var(--bg) 0%, transparent 30%);
 }
 .hero-content {
-  max-width: 640px;
+  max-width: 40rem;
 }
 .hero h1 .glow {
   color: var(--accent-2);
@@ -393,6 +393,16 @@ section {
 @media (max-width: 900px) {
   .grid-3 {
     grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .grid-3 .card {
+    flex-direction: row;
+  }
+  .grid-3 .card-img {
+    width: 40%;
+    aspect-ratio: auto;
+    flex: none;
   }
 }
 @media (max-width: 700px) {
@@ -555,7 +565,7 @@ section {
 .gallery {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  grid-template-rows: 260px 260px;
+  grid-template-rows: 16.25rem 16.25rem;
   gap: 1rem;
 }
 .gallery figure {
@@ -605,7 +615,7 @@ section {
 }
 .video-card {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 12.5rem 1fr;
   gap: 1.1rem;
   align-items: center;
   padding: 0.8rem;
@@ -811,7 +821,7 @@ section {
 }
 .faq-search {
   position: relative;
-  width: min(100%, 340px);
+  width: min(100%, 21rem);
 }
 .faq-search input {
   width: 100%;
@@ -828,7 +838,7 @@ section {
 }
 .faq-layout {
   display: grid;
-  grid-template-columns: 230px 1fr;
+  grid-template-columns: 14.5rem 1fr;
   gap: 2.5rem;
   align-items: start;
 }
@@ -1222,5 +1232,44 @@ input[type='file']::file-selector-button {
 @media (max-width: 900px) {
   .contact-layout .form-card {
     order: -1;
+  }
+}
+
+/* ---------- Phones & tablets: keep the hero car's headlights in view ---------- */
+
+@media (max-width: 900px) {
+  .hero-bg {
+    background-position: 85% 35%;
+    opacity: 0.7;
+  }
+  .hero::after {
+    background:
+      linear-gradient(180deg, rgba(7, 9, 13, 0.35) 0%, rgba(7, 9, 13, 0.75) 55%, var(--bg) 100%),
+      linear-gradient(90deg, rgba(7, 9, 13, 0.85) 0%, rgba(7, 9, 13, 0.4) 100%);
+  }
+}
+
+/* ---------- Large monitors: scale everything up instead of leaving a narrow column ---------- */
+
+@media (min-width: 1700px) {
+  html {
+    font-size: 112.5%;
+  }
+  :root {
+    --max: 1360px;
+  }
+}
+@media (min-width: 2300px) {
+  html {
+    font-size: 131.25%;
+  }
+  :root {
+    --max: 1640px;
+  }
+  .nav {
+    height: 96px;
+  }
+  .brand img {
+    height: 68px;
   }
 }
