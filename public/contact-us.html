@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact | Gils Customs | Custom Lighting and More</title>
+  <meta name="description" content="Start your custom lighting build. Send Gils Customs a message for a free consultation and quote.">
+  <meta name="theme-color" content="#07090d">
+  <link rel="icon" href="/img/favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <nav class="container nav" aria-label="Main">
+      <a class="brand" href="/" aria-label="Gils Customs home"><img src="/img/logo.png" alt="Gils Customs" width="114" height="54"></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/service">Services</a></li>
+        <li><a href="/faq">FAQ</a></li>
+        <li><a class="btn btn-primary" href="/contact-us">Start a build</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="container page-title">
+      <span class="eyebrow">Contact</span>
+      <h1>Send me a message</h1>
+      <p class="lead">Have questions or ready to start your custom build? Reach out today for expert advice and a free quote.</p>
+    </div>
+
+    <section style="padding-top: 1.5rem">
+      <div class="container contact-layout">
+        <aside class="contact-aside">
+          <h2 style="font-size:1.5rem">What to include</h2>
+          <p class="muted">The more I know, the faster I can quote. Helpful details:</p>
+          <ul class="check-list" style="grid-template-columns:1fr">
+            <li>Year, make and model</li>
+            <li>The look you're going for (inspiration photos help a lot)</li>
+            <li>Features you want: RGB, sequential, DRLs, projectors</li>
+            <li>Any deadline you're working with</li>
+          </ul>
+          <img class="contact-photo" src="/img/truck-taillight.jpg" alt="Truck headlight and grille" loading="lazy" width="700" height="1010">
+          <h2 style="font-size:1.5rem">Other ways to reach me</h2>
+          <ul class="contact-methods">
+            <li>
+              <a href="mailto:david@gilscustoms.com">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+                <span>david@gilscustoms.com<small>Email</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.instagram.com/gilscustoms/" target="_blank" rel="noopener">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>
+                <span>@gilscustoms<small>Instagram DM, if you'd rather not email</small></span>
+              </a>
+            </li>
+            <li>
+              <a href="https://www.youtube.com/@GilsCustoms" target="_blank" rel="noopener">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 6.4a2.8 2.8 0 0 0-2-2C18.8 4 12 4 12 4s-6.8 0-8.5.4a2.8 2.8 0 0 0-2 2A29 29 0 0 0 1 12a29 29 0 0 0 .5 5.6 2.8 2.8 0 0 0 2 2c1.7.4 8.5.4 8.5.4s6.8 0 8.5-.4a2.8 2.8 0 0 0 2-2A29 29 0 0 0 23 12a29 29 0 0 0-.5-5.6z"/><path d="m9.75 15.02 5.75-3.02-5.75-3.02v6.04z"/></svg>
+                <span>@GilsCustoms<small>Build videos &amp; how-tos</small></span>
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <form class="form-card" action="/api/contact" method="post" enctype="multipart/form-data" data-contact-form>
+          <input type="hidden" name="source" value="Contact page">
+          <input type="hidden" name="started_at" value="">
+          <div class="hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="c-name">Name <span class="req">*</span></label>
+              <input id="c-name" name="name" type="text" required maxlength="100" autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="c-email">Email <span class="req">*</span></label>
+              <input id="c-email" name="email" type="email" required maxlength="200" autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="c-phone">Phone</label>
+              <input id="c-phone" name="phone" type="tel" maxlength="40" autocomplete="tel">
+            </div>
+            <div class="field">
+              <label for="c-vehicle">Vehicle (year, make, model)</label>
+              <input id="c-vehicle" name="vehicle" type="text" maxlength="150" placeholder="e.g. 2015 Ford F-150">
+            </div>
+            <div class="field">
+              <label for="c-service">What are you interested in?</label>
+              <select id="c-service" name="service">
+                <option value="">Choose one</option>
+                <option>Custom headlight build</option>
+                <option>Custom taillight build</option>
+                <option>Projector retrofit</option>
+                <option>RGB / sequential / DRL upgrade</option>
+                <option>Custom PCB design</option>
+                <option>Complete lighting system</option>
+                <option>Motorcycle / ATV lighting</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="c-heard">How did you hear about us?</label>
+              <select id="c-heard" name="heard">
+                <option value="">Choose one</option>
+                <option>Instagram</option>
+                <option>YouTube</option>
+                <option>TikTok</option>
+                <option>Google / search</option>
+                <option>Friend or referral</option>
+                <option>Car show or meet</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="c-message">Tell me about your project <span class="req">*</span></label>
+              <textarea id="c-message" name="message" required maxlength="5000" placeholder="What look are you going for? Any features or deadlines?"></textarea>
+            </div>
+            <div class="field full">
+              <label for="c-photos">Photos (optional)</label>
+              <input id="c-photos" name="photos" type="file" accept="image/*" multiple>
+              <p class="hint">Up to 4 images, 8 MB each. Your current lights or inspiration pics are both great.</p>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Send message</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="/img/logo.png" alt="Gils Customs" width="148" height="70" loading="lazy">
+          <p>Custom automotive, motorcycle and ATV lighting. Designed and built to order, shipped nationwide.</p>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/service">Services</a></li>
+            <li><a href="/faq">FAQ</a></li>
+            <li><a href="/contact-us">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:david@gilscustoms.com">david@gilscustoms.com</a></li>
+            <li><a href="https://www.instagram.com/gilscustoms/" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://www.youtube.com/@GilsCustoms" target="_blank" rel="noopener">YouTube</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span data-year>2026</span> Gils Customs. All rights reserved.</span>
+        <span>Custom headlights &middot; taillights &middot; lighting electronics</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js" defer></script>
+</body>
+</html>

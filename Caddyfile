@@ -1,0 +1,14 @@
+# Caddy gets and renews HTTPS certificates automatically.
+# SITE_DOMAIN comes from .env (e.g. gilscustoms.com).
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 40MB
+	}
+	reverse_proxy web:3000
+}
