@@ -101,6 +101,30 @@ Works on a Raspberry Pi, old laptop or home server, with no port forwarding.
 2. Run the site: either `npm ci --omit=dev && npm start` (use `pm2` or a systemd service to keep it running) or with Docker by uncommenting the `ports` section for `web` in `docker-compose.yml` and running only `docker compose up -d --build web`.
 3. In Cloudflare Zero Trust, create a Tunnel and point `gilscustoms.com` at `http://localhost:3000`. Cloudflare handles HTTPS.
 
+### Option B2: Proxmox LXC (no Docker)
+
+Run Node directly in a Debian/Ubuntu container as a system service, then publish it with a Cloudflare Tunnel (Option B) or a port forward + reverse proxy.
+
+```bash
+apt update && apt install -y curl git ca-certificates
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+
+useradd --system --home /opt/gilscustoms --shell /usr/sbin/nologin gilscustoms
+git clone <repo-url> /opt/gilscustoms
+cd /opt/gilscustoms
+npm ci --omit=dev
+cp .env.example .env && nano .env          # SMTP settings
+mkdir -p data && chown -R gilscustoms:gilscustoms data
+chown root:gilscustoms .env && chmod 640 .env
+
+cp deploy/gilscustoms.service /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now gilscustoms
+curl http://localhost:3000/healthz         # prints "ok"
+```
+
+Logs: `journalctl -u gilscustoms -f`. Update: `cd /opt/gilscustoms && git pull && npm ci --omit=dev && systemctl restart gilscustoms`.
+
 ### Option C: Without Docker on any server
 
 ```bash

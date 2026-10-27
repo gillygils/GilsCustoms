@@ -1,0 +1,30 @@
+# systemd service for running the site directly (no Docker), e.g. in a
+# Proxmox LXC. Install with:
+#   cp deploy/gilscustoms.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable --now gilscustoms
+
+[Unit]
+Description=Gils Customs website
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gilscustoms
+Group=gilscustoms
+WorkingDirectory=/opt/gilscustoms
+EnvironmentFile=/opt/gilscustoms/.env
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=DATA_DIR=/opt/gilscustoms/data
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
