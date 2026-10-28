@@ -118,3 +118,37 @@ test('rate limits repeated submissions from one IP', async () => {
   assert.deepStrictEqual(statuses.slice(0, 5), [200, 200, 200, 200, 200]);
   assert.strictEqual(statuses[5], 429);
 });
+
+test('pages link versioned CSS/JS and allow edge caching', async () => {
+  const res = await fetch(`${base}/`);
+  assert.match(res.headers.get('cache-control'), /s-maxage=3600/);
+  const html = await res.text();
+  const css = html.match(/\/css\/style\.css\?v=([0-9a-f]{10})"/);
+  assert.ok(css, 'style.css should carry a version');
+  assert.match(html, new RegExp(`/js/main\\.js\\?v=${css[1]}"`));
+
+  const asset = await fetch(`${base}/css/style.css?v=${css[1]}`);
+  assert.strictEqual(asset.headers.get('cache-control'), 'public, max-age=31536000, immutable');
+  const unversioned = await fetch(`${base}/css/style.css`);
+  assert.strictEqual(unversioned.headers.get('cache-control'), 'public, max-age=3600');
+});
+
+test('caches fonts and images', async () => {
+  const font = await fetch(`${base}/fonts/sora-latin.woff2`);
+  assert.strictEqual(font.status, 200);
+  assert.strictEqual(font.headers.get('cache-control'), 'public, max-age=31536000, immutable');
+  const img = await fetch(`${base}/img/logo.webp`);
+  assert.strictEqual(img.status, 200);
+  assert.strictEqual(img.headers.get('cache-control'), 'public, max-age=2592000');
+});
+
+test('redirects .html URLs to clean ones and serves the 404 page', async () => {
+  let res = await fetch(`${base}/faq.html`, { redirect: 'manual' });
+  assert.strictEqual(res.headers.get('location'), '/faq');
+  res = await fetch(`${base}/index.html`, { redirect: 'manual' });
+  assert.strictEqual(res.headers.get('location'), '/');
+  res = await fetch(`${base}/nope`);
+  assert.strictEqual(res.status, 404);
+  assert.match(await res.text(), /Page not found/);
+  assert.strictEqual(res.headers.get('cache-control'), 'no-store');
+});

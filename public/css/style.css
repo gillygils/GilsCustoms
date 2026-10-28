@@ -1,5 +1,24 @@
 /* Gils Customs: site styles */
 
+/* Fonts are self-hosted (variable fonts, latin subset) so the page doesn't
+   wait on another server before it can draw. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url('../fonts/sora-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   --bg: #07090d;
   --bg-2: #0c1016;
@@ -292,7 +311,7 @@ section {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: url('../img/hero-car.jpg') center 40% / cover no-repeat;
+  background: url('../img/hero-car.webp') center 40% / cover no-repeat;
   opacity: 0.85;
 }
 .hero::after {
@@ -697,7 +716,7 @@ section {
   padding: clamp(2.5rem, 6vw, 4.5rem);
   background:
     linear-gradient(90deg, rgba(7, 9, 13, 0.95) 0%, rgba(7, 9, 13, 0.7) 55%, rgba(7, 9, 13, 0.3) 100%),
-    url('../img/headlights-glow.jpg') center / cover;
+    url('../img/headlights-glow.webp') center / cover;
   border: 1px solid var(--border);
 }
 .cta-band h2 {
@@ -1271,5 +1290,219 @@ input[type='file']::file-selector-button {
   }
   .brand img {
     height: 68px;
+  }
+}
+
+/* ---------- First-visit intro (home page) ---------- */
+/* The DRLs from the custom MK4 headlights running their startup sequence:
+   bars sweep on along their angled line, the crescent draws on, a "welcome"
+   flicker, "LIGHT UP YOUR RIDE" lights letter by letter underneath, then an
+   amber double flash like a car unlocking before the site appears.
+   Hidden unless the inline script in index.html adds .show-intro. The whole
+   sequence is CSS-only and ends hidden on its own, so it can't get stuck. */
+
+.intro {
+  display: none;
+}
+.show-intro .intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: radial-gradient(ellipse at 50% 40%, #0a1017 0%, #030405 72%);
+  cursor: pointer;
+  overflow: hidden;
+  animation: intro-out 0.7s ease-in 3.95s forwards;
+}
+.intro-defs {
+  position: absolute;
+}
+.intro-stage {
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.5rem, 5vw, 3.25rem);
+  width: 100%;
+}
+
+/* The two DRLs, mirrored like the front of the car, with the text underneath */
+.intro-lights {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.5rem, 8vw, 9rem);
+  width: 100%;
+}
+.hl {
+  flex: none;
+  width: min(40vw, 480px);
+  height: auto;
+  overflow: visible;
+}
+.hl-left {
+  transform: scaleX(-1);
+}
+/* Unlit light pipes */
+.hl .led-off {
+  fill: #121920;
+  stroke: #172029;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.hl .led-off-arc {
+  fill: none;
+  stroke: #121920;
+  stroke-width: 46;
+  stroke-linecap: butt;
+}
+/* Lit LEDs */
+.hl .seg {
+  fill: #f4fbff;
+  stroke: #f4fbff;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  opacity: 0;
+  animation: led-on 0.16s ease-out var(--d) forwards;
+}
+.hl .arc {
+  fill: none;
+  stroke: #f4fbff;
+  stroke-width: 44;
+  stroke-linecap: butt;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: arc-draw 0.45s cubic-bezier(0.5, 0, 0.3, 1) 0.85s forwards;
+}
+.hl .drl {
+  animation: welcome 0.5s steps(1, end) 1.35s, drl-off 0.01s linear 3.1s forwards;
+}
+/* Amber double flash, like a car unlocking, right before the site appears */
+.hl .amber {
+  opacity: 0;
+  animation: unlock 0.75s linear 3.1s forwards;
+}
+.hl .amber polygon {
+  fill: #ff9400;
+  stroke: #ff9400;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.hl .amber path {
+  fill: none;
+  stroke: #ff9400;
+  stroke-width: 44;
+}
+.show-intro .intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 130, 0, 0.26), transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+  animation: unlock 0.75s linear 3.1s forwards;
+}
+
+/* "LIGHT UP YOUR RIDE": letters turn on one by one like sequential LEDs */
+.intro-text {
+  display: flex;
+  gap: 0 0.45em;
+  margin: 0;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 6.2vw, 4.2rem);
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-align: center;
+}
+.intro-line {
+  display: flex;
+  gap: 0 0.45em;
+  white-space: nowrap;
+}
+.intro-word {
+  white-space: nowrap;
+}
+.intro-word span {
+  display: inline-block;
+  color: #121920;
+  animation: letter-on 0.45s ease-out forwards;
+  animation-delay: calc(1.85s + var(--i) * 0.05s);
+}
+.intro-word.accent span {
+  --on: var(--accent-2);
+}
+
+.intro-skip {
+  position: absolute;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  font: 500 0.85rem var(--font-body);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  cursor: pointer;
+}
+.intro-skip:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+@keyframes led-on {
+  0% { opacity: 0; }
+  60% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+@keyframes drl-off {
+  to { opacity: 0; }
+}
+@keyframes unlock {
+  0% { opacity: 0; }
+  3%, 30% { opacity: 1; }
+  38%, 55% { opacity: 0; }
+  58%, 85% { opacity: 1; }
+  93%, 100% { opacity: 0; }
+}
+@keyframes arc-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes welcome {
+  0% { opacity: 1; }
+  20% { opacity: 0.08; }
+  40% { opacity: 1; }
+  60% { opacity: 0.08; }
+  80%, 100% { opacity: 1; }
+}
+@keyframes letter-on {
+  0% {
+    color: #121920;
+    text-shadow: none;
+  }
+  35% {
+    color: #ffffff;
+    text-shadow: 0 0 6px #fff, 0 0 22px var(--accent), 0 0 48px var(--accent);
+  }
+  55% {
+    color: #4a6577;
+    text-shadow: none;
+  }
+  100% {
+    color: var(--on, var(--text));
+    text-shadow: 0 0 10px rgba(44, 203, 255, 0.7), 0 0 34px rgba(44, 203, 255, 0.35);
+  }
+}
+@keyframes intro-out {
+  0% { opacity: 1; filter: brightness(1); }
+  25% { opacity: 1; filter: brightness(1.8); }
+  100% { opacity: 0; visibility: hidden; filter: brightness(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .show-intro .intro {
+    display: none;
   }
 }

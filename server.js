@@ -261,18 +261,63 @@ app.get(['/home', '/services'], (req, res) => res.redirect(301, req.path === '/h
 app.get('/contact', (req, res) => res.redirect(301, '/contact-us'));
 app.get(['/category/shop', '/shop'], (req, res) => res.redirect(302, '/service'));
 
+// ---------------------------------------------------------------------------
+// Pages and caching
+// ---------------------------------------------------------------------------
+
+// Pages are read once at startup and their CSS/JS links get a content hash
+// (?v=...), so those files can be cached for a year while a deploy (which
+// restarts the service) still shows changes right away.
+const VERSIONED_ASSETS = ['css/style.css', 'js/main.js'];
+const assetHash = crypto.createHash('sha256');
+for (const asset of VERSIONED_ASSETS) assetHash.update(fs.readFileSync(path.join(PUBLIC_DIR, asset)));
+const ASSET_VERSION = assetHash.digest('hex').slice(0, 10);
+
+const pages = new Map();
+for (const file of fs.readdirSync(PUBLIC_DIR)) {
+  if (!file.endsWith('.html')) continue;
+  let html = fs.readFileSync(path.join(PUBLIC_DIR, file), 'utf8');
+  for (const asset of VERSIONED_ASSETS) html = html.split(`/${asset}"`).join(`/${asset}?v=${ASSET_VERSION}"`);
+  pages.set(file.slice(0, -'.html'.length), html);
+}
+
+// Browsers re-check pages on every visit (a cheap 304 when nothing changed);
+// Cloudflare's edge may keep them for an hour when a Cache Rule allows it.
+const PAGE_CACHE = 'public, max-age=0, s-maxage=3600, must-revalidate';
+const YEAR = 'public, max-age=31536000, immutable';
+
+function sendPage(res, name, status = 200) {
+  res
+    .status(status)
+    .set('Cache-Control', status === 200 ? PAGE_CACHE : 'no-store')
+    .type('html')
+    .send(pages.get(name));
+}
+
+app.get(/^\/(.+)\.html$/, (req, res) => res.redirect(301, req.params[0] === 'index' ? '/' : `/${req.params[0]}`));
+app.get('/', (req, res) => sendPage(res, 'index'));
+app.get('/:page', (req, res, next) => {
+  const name = req.params.page;
+  if (name === 'index' || name === '404' || !pages.has(name)) return next();
+  sendPage(res, name);
+});
+
 app.use(
   express.static(PUBLIC_DIR, {
-    extensions: ['html'],
+    index: false,
     setHeaders(res, filePath) {
-      if (/\.(jpg|jpeg|png|webp|svg|ico|woff2?)$/.test(filePath)) {
-        res.set('Cache-Control', 'public, max-age=604800');
+      if (/\.(css|js)$/.test(filePath)) {
+        res.set('Cache-Control', res.req.query.v ? YEAR : 'public, max-age=3600');
+      } else if (/\.woff2$/.test(filePath)) {
+        res.set('Cache-Control', YEAR);
+      } else if (/\.(jpg|jpeg|png|webp|avif|svg|ico)$/.test(filePath)) {
+        res.set('Cache-Control', 'public, max-age=2592000');
       }
     },
   })
 );
 
-app.use((req, res) => res.status(404).sendFile(path.join(PUBLIC_DIR, '404.html')));
+app.use((req, res) => sendPage(res, '404', 404));
 
 if (require.main === module) {
   app.listen(PORT, () => console.log(`Gils Customs site running on http://localhost:${PORT}`));

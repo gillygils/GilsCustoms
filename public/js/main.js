@@ -11,6 +11,24 @@
     });
   }
 
+  // First-visit intro: remove it when it finishes, or right away on click / Esc.
+  var intro = document.querySelector('.intro');
+  if (intro && document.documentElement.classList.contains('show-intro')) {
+    var finish = function () {
+      document.documentElement.classList.remove('show-intro');
+    };
+    var skip = function () {
+      intro.style.animation = 'intro-out 0.35s ease-in forwards';
+    };
+    intro.addEventListener('animationend', function (e) {
+      if (e.target === intro) finish();
+    });
+    intro.addEventListener('click', skip);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') skip();
+    });
+  }
+
   // Footer year
   document.querySelectorAll('[data-year]').forEach(function (el) {
     el.textContent = new Date().getFullYear();

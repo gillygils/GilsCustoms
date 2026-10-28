@@ -42,7 +42,11 @@ Without SMTP settings, form messages are saved to `data/submissions.jsonl` and p
 
 - **Text:** edit the HTML files in `public/` directly. The header and footer are repeated in each page, so a nav or footer change needs to be made in all six HTML files.
 - **FAQ:** each question is a `<details class="faq-item">` block inside its category in `public/faq.html`. Copy one to add a question. The search picks it up automatically.
-- **Photos:** drop new images in `public/img/` and update the `src` in the HTML. Keep them under ~300 KB (resize to ~1200px wide).
+- **Photos:** drop new images in `public/img/` and update the `src` in the HTML. Use WebP and size them to about twice how wide they're shown, for example:
+
+  ```bash
+  ffmpeg -i photo.jpg -vf "scale=1200:-2" -c:v libwebp -quality 78 public/img/photo.webp
+  ```
 - **Colors:** change the variables at the top of `public/css/style.css` (`--accent` is the cyan glow color).
 - **Stats on the home page** (5+ years, 25+ clients, 100+ lights): search for `class="stats"` in `public/index.html`.
 
@@ -123,7 +127,7 @@ systemctl daemon-reload && systemctl enable --now gilscustoms
 curl http://localhost:3000/healthz         # prints "ok"
 ```
 
-Logs: `journalctl -u gilscustoms -f`. Update: `cd /opt/gilscustoms && git pull && npm ci --omit=dev && systemctl restart gilscustoms`.
+Logs: `journalctl -u gilscustoms -f`. Update: `cd /opt/gilscustoms && git pull && npm ci --omit=dev && systemctl restart gilscustoms`, then purge the Cloudflare cache (see below).
 
 ### Option C: Without Docker on any server
 
@@ -150,7 +154,27 @@ Right now Wix runs your DNS (`ns14/ns15.wixdns.net`) and your email MX records p
 
 Everything worth backing up is in `data/` (form submissions and uploaded photos). The site itself lives in git.
 
-## Image credits
+## Speed and caching
+
+The server already sends the right caching headers:
+
+- **CSS and JS** links get an automatic version tag (`?v=...`) when the server starts, so browsers and Cloudflare keep them for a year and still pick up changes after every deploy.
+- **Fonts** are self-hosted in `public/fonts/` and cached for a year; **images** for 30 days.
+- **Pages** tell Cloudflare it may keep them for an hour (`s-maxage=3600`); browsers re-check them every visit.
+
+When the site runs behind Cloudflare, add one **Cache Rule** so Cloudflare serves pages from its edge instead of going through the tunnel to your server on every visit (this fixes "Reduce initial server response time" and "Document request latency" in Cloudflare's speed test):
+
+1. Cloudflare dashboard → your domain → **Caching → Cache Rules → Create rule**.
+2. **Custom filter expression:** Hostname *equals* `gilscustoms.com` **and** URI Path *does not start with* `/api/`.
+3. **Cache eligibility:** Eligible for cache. **Edge TTL:** Use cache-control header if present.
+4. Deploy.
+
+Because pages are cached at Cloudflare for up to an hour, after updating the site go to **Caching → Configuration → Purge Everything** so visitors see the change right away.
+
+Leave **Rocket Loader** off: it rewrites how scripts load and can break the intro animation and contact forms.
+
+## Credits
 
 - Logo, banner and workshop photos: Gils Customs (frames from the [@GilsCustoms](https://www.youtube.com/@GilsCustoms) YouTube channel).
-- Car photos (`hero-car.jpg`, `headlights-glow.jpg`, `headlight-closeup.jpg`, `truck-taillight.jpg`): the free stock images already used on the previous Wix site. Replace them with photos of your own builds whenever you have them.
+- Car photos (`hero-car.webp`, `headlights-glow.webp`, `headlight-closeup.webp`, `truck-taillight.webp`): the free stock images already used on the previous Wix site. Replace them with photos of your own builds whenever you have them.
+- Fonts: [Inter](https://fonts.google.com/specimen/Inter) and [Sora](https://fonts.google.com/specimen/Sora), both under the SIL Open Font License.

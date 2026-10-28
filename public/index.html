@@ -7,22 +7,85 @@
   <meta name="description" content="Custom headlight and taillight builds, projector retrofits, RGB and sequential lighting, and custom LED PCB design. Built to order and shipped nationwide by Gils Customs.">
   <meta property="og:title" content="Gils Customs | Custom Automotive Lighting">
   <meta property="og:description" content="Custom headlight and taillight builds, projector retrofits, RGB lighting and custom LED PCBs.">
-  <meta property="og:image" content="/img/banner.jpg">
+  <meta property="og:image" content="https://gilscustoms.com/img/banner.jpg">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#07090d">
   <link rel="icon" href="/img/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/img/hero-car.webp" as="image" type="image/webp">
   <link rel="stylesheet" href="/css/style.css">
+  <script>
+    // First-visit intro: only for new visitors who haven't asked for reduced motion.
+    try {
+      if (!localStorage.getItem('gc-intro-seen') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('show-intro');
+        localStorage.setItem('gc-intro-seen', '1');
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
+  <div class="intro">
+    <div class="intro-stage" aria-hidden="true">
+      <svg class="intro-defs" width="0" height="0" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id="hl-bloom" x="-60%" y="-150%" width="220%" height="400%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="near"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="far"/>
+            <feColorMatrix in="far" type="matrix" values=".55 0 0 0 0  0 .85 0 0 0  0 0 1 0 0  0 0 0 1 0" result="farTint"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="42" result="haze"/>
+            <feColorMatrix in="haze" type="matrix" values=".45 0 0 0 0  0 .8 0 0 0  0 0 1 0 0  0 0 0 .7 0" result="hazeTint"/>
+            <feMerge><feMergeNode in="hazeTint"/><feMergeNode in="farTint"/><feMergeNode in="farTint"/><feMergeNode in="near"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="hl-bloom-amber" x="-60%" y="-150%" width="220%" height="400%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="near"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="16" result="far"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="42" result="haze"/>
+            <feColorMatrix in="haze" type="matrix" values="1 0 0 0 0  0 .55 0 0 0  0 0 0 0 0  0 0 0 1 0" result="hazeTint"/>
+            <feMerge><feMergeNode in="hazeTint"/><feMergeNode in="hazeTint"/><feMergeNode in="far"/><feMergeNode in="far"/><feMergeNode in="near"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+      </svg>
+      <div class="intro-lights">
+        <svg class="hl hl-left" viewBox="20 40 560 195" focusable="false">
+          <polygon class="led-off" points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon class="led-off" points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon class="led-off" points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon class="led-off" points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+          <path class="led-off-arc" d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          <g class="drl" filter="url(#hl-bloom)">
+            <polygon class="seg" style="--d:0.35s" points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon class="seg" style="--d:0.47s" points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon class="seg" style="--d:0.59s" points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon class="seg" style="--d:0.71s" points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+            <path class="arc" pathLength="100" d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          </g>
+          <g class="amber" filter="url(#hl-bloom-amber)">
+            <polygon points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+            <path d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          </g>
+        </svg>
+        <svg class="hl hl-right" viewBox="20 40 560 195" focusable="false">
+          <polygon class="led-off" points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon class="led-off" points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon class="led-off" points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon class="led-off" points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+          <path class="led-off-arc" d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          <g class="drl" filter="url(#hl-bloom)">
+            <polygon class="seg" style="--d:0.35s" points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon class="seg" style="--d:0.47s" points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon class="seg" style="--d:0.59s" points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon class="seg" style="--d:0.71s" points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+            <path class="arc" pathLength="100" d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          </g>
+          <g class="amber" filter="url(#hl-bloom-amber)">
+            <polygon points="54.0,118.3 139.0,108.1 125.0,153.8 40.0,164.0"/><polygon points="153.0,106.4 238.0,96.2 224.0,141.9 139.0,152.1"/><polygon points="252.0,94.6 337.0,84.4 323.0,130.0 238.0,140.2"/><polygon points="351.0,82.7 436.0,72.5 422.0,118.2 337.0,128.4"/>
+            <path d="M456.1,93.2 A80,80 0 0 1 539.3,212.0"/>
+          </g>
+        </svg>
+      </div>
+      <p class="intro-text">
+        <span class="intro-line"><span class="intro-word"><span style="--i:0">L</span><span style="--i:1">I</span><span style="--i:2">G</span><span style="--i:3">H</span><span style="--i:4">T</span></span><span class="intro-word"><span style="--i:5">U</span><span style="--i:6">P</span></span></span>
+        <span class="intro-line"><span class="intro-word"><span style="--i:7">Y</span><span style="--i:8">O</span><span style="--i:9">U</span><span style="--i:10">R</span></span><span class="intro-word accent"><span style="--i:11">R</span><span style="--i:12">I</span><span style="--i:13">D</span><span style="--i:14">E</span></span></span>
+      </p>
+    </div>
+    <button class="intro-skip" type="button">Skip intro</button>
+  </div>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="site-header">
     <nav class="container nav" aria-label="Main">
-      <a class="brand" href="/" aria-label="Gils Customs home"><img src="/img/logo.png" alt="Gils Customs" width="114" height="54"></a>
+      <a class="brand" href="/" aria-label="Gils Customs home"><img src="/img/logo.webp" alt="Gils Customs" width="114" height="54"></a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
@@ -37,7 +100,7 @@
 
   <main id="main">
     <div class="container page-banner">
-      <img src="/img/banner.jpg" alt="Gils Customs: custom automotive, motorcycle and ATV lighting" width="1600" height="288">
+      <img src="/img/banner.webp" srcset="/img/banner-800.webp 800w, /img/banner.webp 1600w" sizes="min(100vw, 1640px)" alt="Gils Customs: custom automotive, motorcycle and ATV lighting" width="1600" height="288" fetchpriority="high">
     </div>
 
     <!-- Hero -->
@@ -85,7 +148,7 @@
         </div>
         <div class="grid-3">
           <article class="card">
-            <img class="card-img" src="/img/headlight-closeup.jpg" alt="Close-up of a modern projector headlight" loading="lazy" width="1000" height="667">
+            <img class="card-img" src="/img/headlight-closeup.webp" alt="Close-up of a modern projector headlight" loading="lazy" width="1000" height="667">
             <div class="card-body">
               <h3>Custom Headlight &amp; Taillight Builds</h3>
               <p>Lights that stand out from the crowd and put out serious, usable light.</p>
@@ -94,7 +157,7 @@
             </div>
           </article>
           <article class="card">
-            <img class="card-img" src="/img/shop-pcb-green.jpg" alt="Custom-designed LED circuit boards on the workbench" loading="lazy" width="600" height="741" style="object-position: center 70%">
+            <img class="card-img" src="/img/shop-pcb-green.webp" alt="Custom-designed LED circuit boards on the workbench" loading="lazy" width="600" height="741" style="object-position: center 70%">
             <div class="card-body">
               <h3>PCB Design &amp; Engineering</h3>
               <p>When off-the-shelf boards don't fit, I design custom LED PCBs built for your exact housing.</p>
@@ -103,7 +166,7 @@
             </div>
           </article>
           <article class="card">
-            <img class="card-img" src="/img/shop-drl.jpg" alt="Custom-built DRL light bars glowing on the bench" loading="lazy" width="1200" height="594">
+            <img class="card-img" src="/img/shop-drl.webp" alt="Custom-built DRL light bars glowing on the bench" loading="lazy" width="1200" height="594">
             <div class="card-body">
               <h3>Complete Lighting Systems</h3>
               <p>Modernizing a classic or building something new? I take it from 3D scan and design all the way to a tested prototype.</p>
@@ -172,33 +235,33 @@
         </div>
         <div class="gallery">
           <figure class="tall">
-            <img src="/img/shop-drl.jpg" alt="Custom DRL bars lit up on the bench" loading="lazy">
+            <img src="/img/shop-drl.webp" alt="Custom DRL bars lit up on the bench" loading="lazy">
             <figcaption>Custom DRL bars, tested on the bench</figcaption>
           </figure>
           <figure>
-            <img src="/img/shop-red-leds.jpg" alt="Red LED board powered on for testing" loading="lazy">
+            <img src="/img/shop-red-leds.webp" alt="Red LED board powered on for testing" loading="lazy">
             <figcaption>Taillight LED board test</figcaption>
           </figure>
           <figure>
-            <img src="/img/shop-pcb-green.jpg" alt="Custom PCBs being assembled" loading="lazy">
+            <img src="/img/shop-pcb-green.webp" alt="Custom PCBs being assembled" loading="lazy">
             <figcaption>Custom PCBs in assembly</figcaption>
           </figure>
           <figure>
-            <img src="/img/shop-pcb-red.jpg" alt="Circuit board on the hot plate" loading="lazy">
+            <img src="/img/shop-pcb-red.webp" alt="Circuit board on the hot plate" loading="lazy">
             <figcaption>Reflowing a custom board</figcaption>
           </figure>
           <figure>
-            <img src="/img/headlights-glow.jpg" alt="Car with headlights on at night" loading="lazy">
+            <img src="/img/headlights-glow.webp" alt="Car with headlights on at night" loading="lazy">
             <figcaption>The end goal: lights that turn heads</figcaption>
           </figure>
         </div>
         <div class="grid-2 video-cards">
           <a class="video-card" href="https://www.youtube.com/watch?v=ZXLj6o4epw8" target="_blank" rel="noopener">
-            <img src="/img/yt-bi-led.jpg" alt="" loading="lazy">
+            <img src="/img/yt-bi-led.webp" alt="" loading="lazy">
             <div><strong>How to Make a Bi-LED Signal Combiner for H11 / 3-Wire Headlights</strong><span>Watch on YouTube &rarr;</span></div>
           </a>
           <a class="video-card" href="https://www.youtube.com/watch?v=j7of6lpkwZA" target="_blank" rel="noopener">
-            <img src="/img/yt-sequencer.jpg" alt="" loading="lazy">
+            <img src="/img/yt-sequencer.webp" alt="" loading="lazy">
             <div><strong>Corsomotion Sequencer V2: Animation Settings &amp; DIP Switch Guide</strong><span>Watch on YouTube &rarr;</span></div>
           </a>
         </div>
@@ -281,7 +344,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="/img/logo.png" alt="Gils Customs" width="148" height="70" loading="lazy">
+          <img src="/img/logo.webp" alt="Gils Customs" width="148" height="70" loading="lazy">
           <p>Custom automotive, motorcycle and ATV lighting. Designed and built to order, shipped nationwide.</p>
         </div>
         <div>
