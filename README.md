@@ -154,6 +154,23 @@ Right now Wix runs your DNS (`ns14/ns15.wixdns.net`) and your email MX records p
 
 Everything worth backing up is in `data/` (form submissions and uploaded photos). The site itself lives in git.
 
+## Spam protection (Cloudflare Turnstile)
+
+The contact forms use a hidden honeypot field, a minimum fill time and a per-visitor rate limit. To stop bots that post to the form directly, turn on Cloudflare Turnstile (free):
+
+1. Cloudflare dashboard → **Turnstile** (in the account sidebar, not inside the domain) → **Add widget**.
+2. **Widget name:** Gils Customs contact form. **Hostnames:** `gilscustoms.com` and `www.gilscustoms.com`. **Widget mode:** Managed.
+3. Copy the **Site Key** and **Secret Key** into `.env`:
+
+   ```
+   TURNSTILE_SITE_KEY=0x4AAAA...
+   TURNSTILE_SECRET_KEY=0x4AAAA...
+   ```
+
+4. `systemctl restart gilscustoms`, then **Purge Everything** in Cloudflare so cached pages pick up the check box.
+
+Most visitors never see a puzzle; Turnstile shows a small "Verifying… ✓" box above the Send button. Every submission is checked with Cloudflare on the server, so a bot posting to `/api/contact` without a valid pass gets rejected and is never emailed or saved. Rejections show up in `journalctl -u gilscustoms` as "failed the spam check". The Turnstile script only loads when a visitor scrolls near a form, so it doesn't slow down the page.
+
 ## Speed and caching
 
 The server already sends the right caching headers:

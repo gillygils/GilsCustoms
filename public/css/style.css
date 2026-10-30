@@ -1127,6 +1127,10 @@ input[type='file']::file-selector-button {
   color: var(--text);
   cursor: pointer;
 }
+.cf-turnstile {
+  margin-top: 1.2rem;
+  min-height: 65px;
+}
 .hp {
   position: absolute !important;
   left: -10000px !important;

@@ -15,6 +15,12 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const MAIL_TO = process.env.MAIL_TO || 'david@gilscustoms.com';
 const MAIL_FROM = process.env.MAIL_FROM || process.env.SMTP_USER || MAIL_TO;
 const SEND_AUTO_REPLY = process.env.AUTO_REPLY === 'true';
+// Cloudflare Turnstile spam check. Without both keys the forms work without it.
+const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY || '';
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || '';
+const TURNSTILE_ENABLED = Boolean(TURNSTILE_SITE_KEY && TURNSTILE_SECRET_KEY);
+const TURNSTILE_VERIFY_URL =
+  process.env.TURNSTILE_VERIFY_URL || 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
@@ -65,6 +71,29 @@ if (!smtpConfigured) {
 // ---------------------------------------------------------------------------
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Behind the Cloudflare Tunnel every request arrives from localhost, so use
+// the visitor address Cloudflare passes along when it's there.
+function clientIp(req) {
+  return req.get('cf-connecting-ip') || req.ip;
+}
+
+async function passesTurnstile(token, ip) {
+  if (!TURNSTILE_ENABLED) return true;
+  if (typeof token !== 'string' || !token) return false;
+  try {
+    const res = await fetch(TURNSTILE_VERIFY_URL, {
+      method: 'POST',
+      body: new URLSearchParams({ secret: TURNSTILE_SECRET_KEY, response: token, remoteip: ip }),
+      signal: AbortSignal.timeout(8000),
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch (e) {
+    console.error('[contact] Turnstile check failed to run', e.message);
+    return false;
+  }
+}
 
 function clean(value, max) {
   if (typeof value !== 'string') return '';
@@ -156,7 +185,8 @@ app.post('/api/contact', (req, res) => {
       return reply(req, res, 200, 'Thanks!');
     }
 
-    if (rateLimited(req.ip)) {
+    const ip = clientIp(req);
+    if (rateLimited(ip)) {
       return reply(req, res, 429, 'Too many messages in a short time. Please try again in a few minutes.');
     }
 
@@ -166,6 +196,16 @@ app.post('/api/contact', (req, res) => {
     if (!f.name) return reply(req, res, 400, 'Please enter your name.');
     if (!EMAIL_RE.test(f.email)) return reply(req, res, 400, 'Please enter a valid email address.');
     if (!f.message) return reply(req, res, 400, 'Please tell us a little about your project.');
+
+    if (!(await passesTurnstile(body['cf-turnstile-response'], ip))) {
+      console.log(`[contact] rejected a submission that failed the spam check (${ip})`);
+      return reply(
+        req,
+        res,
+        400,
+        `The spam check didn't pass. Please refresh the page and try again, or email ${MAIL_TO}.`
+      );
+    }
 
     const id = `${new Date().toISOString().replace(/[:.]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`;
     const photos = (req.files || []).map((file, i) => ({
@@ -181,7 +221,7 @@ app.post('/api/contact', (req, res) => {
         fs.mkdirSync(dir, { recursive: true });
         for (const p of photos) fs.writeFileSync(path.join(dir, p.filename), p.content);
       }
-      const record = { id, receivedAt: new Date().toISOString(), ip: req.ip, ...f, photos: photos.map((p) => p.filename) };
+      const record = { id, receivedAt: new Date().toISOString(), ip, ...f, photos: photos.map((p) => p.filename) };
       fs.appendFileSync(path.join(DATA_DIR, 'submissions.jsonl'), JSON.stringify(record) + '\n');
     } catch (e) {
       console.error('[contact] could not save submission', e);
@@ -278,6 +318,9 @@ for (const file of fs.readdirSync(PUBLIC_DIR)) {
   if (!file.endsWith('.html')) continue;
   let html = fs.readFileSync(path.join(PUBLIC_DIR, file), 'utf8');
   for (const asset of VERSIONED_ASSETS) html = html.split(`/${asset}"`).join(`/${asset}?v=${ASSET_VERSION}"`);
+  html = TURNSTILE_ENABLED
+    ? html.split('__TURNSTILE_SITE_KEY__').join(TURNSTILE_SITE_KEY)
+    : html.replace(/\s*<div class="cf-turnstile"[^>]*><\/div>/g, '');
   pages.set(file.slice(0, -'.html'.length), html);
 }
 

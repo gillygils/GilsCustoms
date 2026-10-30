@@ -34,6 +34,48 @@
     el.textContent = new Date().getFullYear();
   });
 
+  // Cloudflare Turnstile (spam check). The server only puts a .cf-turnstile box
+  // in the forms when it has a site key. The script loads when a form gets
+  // close to the screen, so it doesn't slow down the first page load.
+  var captchas = document.querySelectorAll('form[data-contact-form] .cf-turnstile');
+  var captchaRequested = false;
+  function loadCaptcha() {
+    if (captchaRequested || !captchas.length) return;
+    captchaRequested = true;
+    window.gcTurnstileReady = function () {
+      captchas.forEach(function (box) {
+        box.dataset.widgetId = window.turnstile.render(box, {
+          sitekey: box.dataset.sitekey,
+          theme: 'dark',
+          size: 'flexible',
+        });
+      });
+    };
+    var script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=gcTurnstileReady';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+  if (captchas.length) {
+    if ('IntersectionObserver' in window) {
+      var watcher = new IntersectionObserver(
+        function (entries) {
+          if (entries.some(function (e) { return e.isIntersecting; })) {
+            loadCaptcha();
+            watcher.disconnect();
+          }
+        },
+        { rootMargin: '600px 0px' }
+      );
+      captchas.forEach(function (box) { watcher.observe(box.closest('form')); });
+    } else {
+      loadCaptcha();
+    }
+    document.addEventListener('focusin', function (e) {
+      if (e.target.closest && e.target.closest('form[data-contact-form]')) loadCaptcha();
+    });
+  }
+
   // Contact forms: submit with fetch, fall back to a normal POST without JS.
   document.querySelectorAll('form[data-contact-form]').forEach(function (form) {
     var started = form.querySelector('input[name="started_at"]');
@@ -54,6 +96,14 @@
       var files = form.querySelector('input[type="file"]');
       if (files && files.files.length > 4) {
         show('Please attach no more than 4 photos.', false);
+        return;
+      }
+
+      var captcha = form.querySelector('.cf-turnstile');
+      var token = form.querySelector('input[name="cf-turnstile-response"]');
+      if (captcha && !(token && token.value)) {
+        loadCaptcha();
+        show('Just a second, the spam check is still finishing. Then press Send again.', false);
         return;
       }
 
@@ -87,6 +137,10 @@
         .finally(function () {
           button.disabled = false;
           button.textContent = label;
+          // Each Turnstile pass works once, so get a fresh one for the next send.
+          if (captcha && window.turnstile && captcha.dataset.widgetId) {
+            window.turnstile.reset(captcha.dataset.widgetId);
+          }
         });
     });
   });
