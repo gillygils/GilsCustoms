@@ -46,6 +46,7 @@
       captchas.forEach(function (box) {
         box.dataset.widgetId = window.turnstile.render(box, {
           sitekey: box.dataset.sitekey,
+          action: 'contact',
           theme: 'dark',
           size: 'flexible',
         });

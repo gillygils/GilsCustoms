@@ -156,20 +156,15 @@ Everything worth backing up is in `data/` (form submissions and uploaded photos)
 
 ## Spam protection (Cloudflare Turnstile)
 
-The contact forms use a hidden honeypot field, a minimum fill time and a per-visitor rate limit. To stop bots that post to the form directly, turn on Cloudflare Turnstile (free):
+The contact forms use a hidden honeypot field, a minimum fill time, a per-visitor rate limit and Cloudflare Turnstile.
 
-1. Cloudflare dashboard → **Turnstile** (in the account sidebar, not inside the domain) → **Add widget**.
-2. **Widget name:** Gils Customs contact form. **Hostnames:** `gilscustoms.com` and `www.gilscustoms.com`. **Widget mode:** Managed.
-3. Copy the **Site Key** and **Secret Key** into `.env`:
+The Turnstile widget (site key `0x4AAAAAAFtIJ4PiRVSJ107w`, hostnames `gilscustoms.com` and `www.gilscustoms.com`) is built into the code. To switch the check on, add the widget's **secret key** to `.env`:
 
-   ```
-   TURNSTILE_SITE_KEY=0x4AAAA...
-   TURNSTILE_SECRET_KEY=0x4AAAA...
-   ```
+1. Cloudflare dashboard → **Turnstile** → the Gils Customs widget → **Settings** → copy the **Secret Key**.
+2. `nano /opt/gilscustoms/.env` and add `TURNSTILE_SECRET_KEY=` followed by the key (no spaces, no quotes). Never commit or share it.
+3. `systemctl restart gilscustoms`, then **Purge Everything** in Cloudflare so cached pages pick up the check box.
 
-4. `systemctl restart gilscustoms`, then **Purge Everything** in Cloudflare so cached pages pick up the check box.
-
-Most visitors never see a puzzle; Turnstile shows a small "Verifying… ✓" box above the Send button. Every submission is checked with Cloudflare on the server, so a bot posting to `/api/contact` without a valid pass gets rejected and is never emailed or saved. Rejections show up in `journalctl -u gilscustoms` as "failed the spam check". The Turnstile script only loads when a visitor scrolls near a form, so it doesn't slow down the page.
+Most visitors never see a puzzle; Turnstile shows a small "Verifying… ✓ Success!" box above the Send button. Every submission is checked with Cloudflare on the server, which must confirm the pass is valid, unused, issued for the `contact` action and earned on one of the allowed hostnames. Anything else (including bots posting straight to `/api/contact`, or Cloudflare being unreachable) is rejected with a 403 and never emailed or saved. Rejections show up in `journalctl -u gilscustoms` as "failed the spam check" with the reason. The Turnstile script only loads when a visitor scrolls near a form, so it doesn't slow down the page.
 
 ## Speed and caching
 

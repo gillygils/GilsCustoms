@@ -15,12 +15,19 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const MAIL_TO = process.env.MAIL_TO || 'david@gilscustoms.com';
 const MAIL_FROM = process.env.MAIL_FROM || process.env.SMTP_USER || MAIL_TO;
 const SEND_AUTO_REPLY = process.env.AUTO_REPLY === 'true';
-// Cloudflare Turnstile spam check. Without both keys the forms work without it.
-const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY || '';
+// Cloudflare Turnstile spam check. The site key is public; the secret key
+// must only ever live in .env. Without the secret the forms work without it.
+const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY || '0x4AAAAAAFtIJ4PiRVSJ107w';
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || '';
 const TURNSTILE_ENABLED = Boolean(TURNSTILE_SITE_KEY && TURNSTILE_SECRET_KEY);
 const TURNSTILE_VERIFY_URL =
   process.env.TURNSTILE_VERIFY_URL || 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+// Only passes earned on these hostnames, by the contact form, are accepted.
+const TURNSTILE_HOSTNAMES = (process.env.TURNSTILE_HOSTNAMES || 'gilscustoms.com,www.gilscustoms.com')
+  .split(',')
+  .map((h) => h.trim().toLowerCase())
+  .filter(Boolean);
+const TURNSTILE_ACTION = 'contact';
 
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
@@ -80,20 +87,27 @@ function clientIp(req) {
   return req.get('cf-connecting-ip') || req.ip;
 }
 
-async function passesTurnstile(token, ip) {
-  if (!TURNSTILE_ENABLED) return true;
-  if (typeof token !== 'string' || !token) return false;
+// Returns '' when the submission passes, otherwise a short reason for the log.
+// Fails closed: if Cloudflare can't be reached, the submission is rejected.
+async function turnstileProblem(token, ip) {
+  if (!TURNSTILE_ENABLED) return '';
+  if (typeof token !== 'string' || !token) return 'no token';
+  if (token.length > 2048) return 'token too long';
+  if (!TURNSTILE_HOSTNAMES.length) return 'no allowed hostnames configured';
   try {
     const res = await fetch(TURNSTILE_VERIFY_URL, {
       method: 'POST',
       body: new URLSearchParams({ secret: TURNSTILE_SECRET_KEY, response: token, remoteip: ip }),
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(10000),
     });
+    if (!res.ok) return `siteverify returned HTTP ${res.status}`;
     const data = await res.json();
-    return data.success === true;
+    if (data.success !== true) return `not valid (${(data['error-codes'] || []).join(', ') || 'no reason given'})`;
+    if (data.action !== TURNSTILE_ACTION) return `wrong action "${data.action}"`;
+    if (!TURNSTILE_HOSTNAMES.includes(String(data.hostname).toLowerCase())) return `wrong hostname "${data.hostname}"`;
+    return '';
   } catch (e) {
-    console.error('[contact] Turnstile check failed to run', e.message);
-    return false;
+    return `siteverify unreachable (${e.message})`;
   }
 }
 
@@ -203,12 +217,13 @@ app.post('/api/contact', (req, res) => {
     }
     if (!f.message) return reply(req, res, 400, 'Please tell us a little about your project.');
 
-    if (!(await passesTurnstile(body['cf-turnstile-response'], ip))) {
-      console.log(`[contact] rejected a submission that failed the spam check (${ip})`);
+    const problem = await turnstileProblem(body['cf-turnstile-response'], ip);
+    if (problem) {
+      console.log(`[contact] rejected a submission that failed the spam check: ${problem} (${ip})`);
       return reply(
         req,
         res,
-        400,
+        403,
         `The spam check didn't pass. Please refresh the page and try again, or email ${MAIL_TO}.`
       );
     }
