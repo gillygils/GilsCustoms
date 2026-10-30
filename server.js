@@ -33,6 +33,8 @@ const FIELD_LIMITS = {
   name: 100,
   email: 200,
   phone: 40,
+  // Longer than a year so the 4-digit check sees extra digits instead of a trimmed value.
+  year: 10,
   vehicle: 150,
   service: 100,
   heard: 100,
@@ -195,6 +197,10 @@ app.post('/api/contact', (req, res) => {
 
     if (!f.name) return reply(req, res, 400, 'Please enter your name.');
     if (!EMAIL_RE.test(f.email)) return reply(req, res, 400, 'Please enter a valid email address.');
+    const year = Number(f.year);
+    if (!/^\d{4}$/.test(f.year) || year < 1900 || year > new Date().getFullYear() + 2) {
+      return reply(req, res, 400, "Please enter your vehicle's year (4 digits, like 2015).");
+    }
     if (!f.message) return reply(req, res, 400, 'Please tell us a little about your project.');
 
     if (!(await passesTurnstile(body['cf-turnstile-response'], ip))) {
@@ -232,11 +238,12 @@ app.post('/api/contact', (req, res) => {
       return reply(req, res, 200, "Thanks! We'll get back to you soon.");
     }
 
+    const vehicle = [f.year, f.vehicle].filter(Boolean).join(' ');
     const rows = [
       ['Name', f.name],
       ['Email', f.email],
       ['Phone', f.phone],
-      ['Vehicle', f.vehicle],
+      ['Vehicle', vehicle],
       ['Interested in', f.service],
       ['Heard about us', f.heard],
       ['Sent from', f.source],
@@ -259,7 +266,7 @@ app.post('/api/contact', (req, res) => {
         from: { name: 'Gils Customs Website', address: MAIL_FROM },
         to: MAIL_TO,
         replyTo: { name: f.name, address: f.email },
-        subject: `New build inquiry from ${f.name}${f.vehicle ? ` (${f.vehicle})` : ''}`,
+        subject: `New build inquiry from ${f.name} (${vehicle})`,
         text,
         html,
         attachments: photos,

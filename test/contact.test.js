@@ -44,7 +44,8 @@ function post(fields, ip, accept = 'application/json') {
 const valid = {
   name: 'Test Person',
   email: 'test@example.com',
-  vehicle: '2015 Ford F-150',
+  year: '2015',
+  vehicle: 'Ford F-150',
   message: 'I want sequential turn signals.',
   started_at: '0',
 };
@@ -75,7 +76,8 @@ test('accepts a valid submission and saves it', async () => {
   assert.strictEqual((await res.json()).ok, true);
   const last = submissions().at(-1);
   assert.strictEqual(last.email, 'test@example.com');
-  assert.strictEqual(last.vehicle, '2015 Ford F-150');
+  assert.strictEqual(last.year, '2015');
+  assert.strictEqual(last.vehicle, 'Ford F-150');
 });
 
 test('redirects to /thanks for non-JS form posts', async () => {
@@ -91,6 +93,18 @@ test('rejects missing or invalid fields', async () => {
   assert.strictEqual(res.status, 400);
   res = await post({ ...valid, name: '' }, '10.0.0.3');
   assert.strictEqual(res.status, 400);
+});
+
+test('requires a sensible vehicle year', async () => {
+  const bad = ['', '15', '20155', 'abcd', '1850', String(new Date().getFullYear() + 5)];
+  for (const [i, year] of bad.entries()) {
+    const res = await post({ ...valid, year }, `10.0.1.${i}`);
+    assert.strictEqual(res.status, 400, `year "${year}" should be rejected`);
+    assert.match((await res.json()).message, /year/);
+  }
+  const { year, ...noYear } = valid;
+  assert.strictEqual((await post(noYear, '10.0.0.8')).status, 400);
+  assert.strictEqual((await post({ ...valid, year: '1967' }, '10.0.0.8')).status, 200);
 });
 
 test('silently drops honeypot and too-fast submissions', async () => {

@@ -86,12 +86,16 @@
               <input id="c-email" name="email" type="email" required maxlength="200" autocomplete="email">
             </div>
             <div class="field">
-              <label for="c-phone">Phone</label>
-              <input id="c-phone" name="phone" type="tel" maxlength="40" autocomplete="tel">
+              <label for="c-year">Vehicle year <span class="req">*</span></label>
+              <input id="c-year" name="year" type="text" inputmode="numeric" required maxlength="4" pattern="(19|20)[0-9]{2}" title="Enter the 4-digit year, like 2015" placeholder="e.g. 2015" autocomplete="off">
             </div>
             <div class="field">
-              <label for="c-vehicle">Vehicle (year, make, model)</label>
-              <input id="c-vehicle" name="vehicle" type="text" maxlength="150" placeholder="e.g. 2015 Ford F-150">
+              <label for="c-vehicle">Make &amp; model</label>
+              <input id="c-vehicle" name="vehicle" type="text" maxlength="150" placeholder="e.g. Ford F-150">
+            </div>
+            <div class="field">
+              <label for="c-phone">Phone</label>
+              <input id="c-phone" name="phone" type="tel" maxlength="40" autocomplete="tel">
             </div>
             <div class="field">
               <label for="c-service">What are you interested in?</label>
@@ -107,7 +111,7 @@
                 <option>Something else</option>
               </select>
             </div>
-            <div class="field">
+            <div class="field full">
               <label for="c-heard">How did you hear about us?</label>
               <select id="c-heard" name="heard">
                 <option value="">Choose one</option>

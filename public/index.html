@@ -322,9 +322,13 @@
               <label for="h-email">Email <span class="req">*</span></label>
               <input id="h-email" name="email" type="email" required maxlength="200" autocomplete="email">
             </div>
-            <div class="field full">
-              <label for="h-vehicle">Vehicle (year, make, model)</label>
-              <input id="h-vehicle" name="vehicle" type="text" maxlength="150" placeholder="e.g. 2015 Ford F-150">
+            <div class="field">
+              <label for="h-year">Vehicle year <span class="req">*</span></label>
+              <input id="h-year" name="year" type="text" inputmode="numeric" required maxlength="4" pattern="(19|20)[0-9]{2}" title="Enter the 4-digit year, like 2015" placeholder="e.g. 2015" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="h-vehicle">Make &amp; model</label>
+              <input id="h-vehicle" name="vehicle" type="text" maxlength="150" placeholder="e.g. Ford F-150">
             </div>
             <div class="field full">
               <label for="h-message">How can I help? <span class="req">*</span></label>

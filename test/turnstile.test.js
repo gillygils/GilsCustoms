@@ -49,7 +49,7 @@ after(() => {
 
 function post(extra, headers = {}) {
   const fd = new FormData();
-  const fields = { name: 'Test', email: 'test@example.com', message: 'Hello', started_at: '0', ...extra };
+  const fields = { name: 'Test', email: 'test@example.com', year: '2015', message: 'Hello', started_at: '0', ...extra };
   for (const [k, v] of Object.entries(fields)) fd.append(k, v);
   return fetch(`${base}/api/contact`, { method: 'POST', body: fd, headers: { Accept: 'application/json', ...headers } });
 }
